@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="hexagons.ico">
+<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css">
+<style>html,body{font-family: 'Abel', sans-serif;margin: 0;padding: 0;background:#fff;width:100%;height:100%}
+#title{position:relative;float:left;width:70%;text-align:center;height:5%;background:#2F4066 ;font:Tangerine; font-size:50px;font-size: 1.5vw;font-weight:900; text-shadow:1;color:#eee;box-shadow: -1px 2px 2px 0 rgba(0,0,0,.5);z-index:98;}
+#map{position:relative;float:right;width:100%;height:95%;box-shadow:0px 0px 3px 2px rgba(0,0,0,.5) inset;z-index:98}
+#msg-box{position:relative;float:left;text-align:center;height:5%;width:15%;font:Tangerine; font-size:50px;font-size: 1.5vw;box-shadow: -1px 2px 2px 0 rgba(0,0,0,.5);z-index:98;}
+#chart{position:fixed;top:-10px;padding-top:10px;right:0;width:15%;height:25%; background:#2F4066;font-size:12px;font-size: 0.9vw;box-shadow: -1px 2px 2px 0 rgba(0,0,0,.5);z-index:101}
+#legend{padding-top:0.5%; font-size:50px;font-size: 1vw;font-weight:bold;position:fixed;top:12.5%;right:15%; width:15%;height:11.5%;box-shadow: -2px 2px 2px 0 rgba(0,0,0,.5);z-index:100;text-align:center;background:#fff;}
+.gradRamp{float:left;background: #e2e7f3; background: #e2e7f3; background:-webkit-linear-gradient(left, #e2e7f3, #064d92); background: -moz-linear-gradient(left, #e2e7f3, #064d92); background: -ms-linear-gradient(left, #e2e7f3, #064d92); background: -o-linear-gradient(left, #e2e7f3, #064d92); background: linear-gradient(to right, #e2e7f3, #064d92);width:100%;height:40%}
+.gradLab{float:right;width:50%;height:67%;font-weight:100;}
+layerCont{width:15%;height:10%;background:#fff;z-index:100;}
+.layerSel{position:fixed;top:4.5%;cursor:pointer;	background:#CCC;width:5%;text-align:center; height:4%;font:Tangerine; font-weight:bold;font-size:10px;font-size: 0.8vw;box-shadow: -1px 2px 2px 0 rgba(0,0,0,.5);z-index:100; overflow:hidden;}
+.layerSelR2{position:fixed;top:4.5%;cursor:pointer;	background:#CCC;width:5%;text-align:center; height:4%;font:Tangerine; font-weight:bold;font-size:10px;font-size: 0.8vw;box-shadow: -1px -2px 2px 0 rgba(0,0,0,.5);z-index:100; overflow:hidden;}
+.layerSel:hover,.layerSelR2:hover{background:#2f4066;color:#fff;}
+#layerSel1{left:70%;}
+#layerSel2{left:75%;}
+#layerSel3{left:80%;}
+#layerSel4{top:8.5%;left:70%;}
+#layerSel5{top:8.5%;left:75%;}
+#layerSel6{top:8.5%;left:80%;}
+.hexbin-hexagon {
+    stroke: #000;
+    stroke-width: 1px;
+}
+path:hover{fill:red;
+cursor:pointer;}
+#pos1{position:fixed;top:14%;left:0.65%;z-index:104;}
+#pos2{position:fixed;top:18.5%;left:0.65%;z-index:104;}
+#overlay{
+    
+	position: fixed;
+	top: 0%;
+	left: 0%;
+	width: 100%;
+	height: 100%;
+	background-color: black;
+	opacity: .95;
+	z-index:1001;
+}
+
+#overlay-content{ 
+	position: absolute;
+
+	z-index:1002;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  background-color: #333;
+  position:fixed;
+  top:40%;
+  left:50%;
+
+  margin: 100px auto;
+  -webkit-animation: sk-rotateplane 1.2s infinite ease-in-out;
+  animation: sk-rotateplane 1.2s infinite ease-in-out;
+}
+
+@-webkit-keyframes sk-rotateplane {
+  0% { -webkit-transform: perspective(120px) }
+  50% { -webkit-transform: perspective(120px) rotateY(180deg) }
+  100% { -webkit-transform: perspective(120px) rotateY(180deg)  rotateX(180deg) }
+}
+
+@keyframes sk-rotateplane {
+  0% { 
+    transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+    -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg) 
+  } 50% { 
+    transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+    -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg) 
+  } 100% { 
+    transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+    -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+  }
+}}
+</style>
+<title>HexBinning</title>
+</head>
+<div id="overlay">
+<div id="overlay-content"><div style="position:fixed;top:53%;left:55%;font:Tangerine; font-size:50px;font-size: 1.5vw;font-weight:900; text-shadow:1;color:#eee;">Loading</div><br />
+<div class="spinner"></div>
+    </div>
+
+</div>
+
+<div id="title">HexBinning Ontario</div>
+<div id="msg-box">Layer Selection</div>
+<div id="layerSel1"class="layerSel" onclick="activeLayer='wood';generateData2(activeLayer)">Wooded Area</div>
+<div id="layerSel2"class="layerSel" onclick="activeLayer='resource';generateData2(activeLayer)">Resource & Industrial</div>
+<div id="layerSel3"class="layerSel" onclick="activeLayer='residence';generateData2(activeLayer)">Residential</div>
+<div id="layerSel4"class="layerSelR2" onclick="activeLayer='highway';generateData2(activeLayer)">Highways</div>
+<div id="layerSel5"class="layerSelR2" onclick="activeLayer='local';generateData2(activeLayer)">Local Streets</div>
+<div id="layerSel6"class="layerSelR2" onclick="activeLayer='winter';generateData2(activeLayer)">Winter Roads</div>
+<div id="pos1" class="leaflet-zoom-box-control leaflet-bar leaflet-control" title="Add Labels"><a class="pos1" onclick="toggleLab()"><img src="imgs/tag65.png" style="padding-top:5%;width:80%" /></a></div>
+<div id="pos2" class="leaflet-zoom-box-control leaflet-bar leaflet-control" title="More info"><a class="pos2"target="_blank" href="http://spatial.blog.ryerson.ca/2015/11/18/hexbinning-ontario/"><img src="imgs/q.png" style="padding-top:5%;width:80%" /></a></div>
+
+
+
+<div id="chart"></div>
+<div id="map"></div>
+<div id="legend">% of Coverage<br /><div class="gradRamp"></div><div class="gradLab" style="text-align:right;">High </div><div class="gradLab"style="text-align:left;"> Low</div></div>
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script> 
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="leaflet-d3.js"></script>
+<script src="hexbin.js"></script>
+<script src="data.js"></script>
+<script src="data1.js"></script>
+<script src="data-roads.js"></script>
+<script src="chartOpts.js"></script>
+
+<script>
+var center = [48.809114, -85.232740];
+
+var osmUrl = 'http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png',
+    osmAttrib = 'Developed by: Andrew Thompson © | Powered by: Leaflet-D3 | GeoVis Course Assignment, SA8905, Fall 2015 (Rinner)',
+    osm = L.tileLayer(osmUrl, {maxZoom: 18, attribution: osmAttrib});
+
+map = new L.Map('map', {
+	layers: [osm],
+	center: new L.LatLng(center[0], center[1]),
+	zoom: 4,
+	maxZoom:13,
+	minZoom:1});
+var northEast = L.latLng(66.583, -54.316),
+southWest = L.latLng(24.367, -220.605),
+bounds = L.latLngBounds(southWest, northEast);
+map.setMaxBounds(bounds)
+
+var options = {
+    radius : 24,
+    opacity: 0.7,
+    duration: 200,
+    lng: function(d){
+        return d[0];
+    },
+    lat: function(d){
+        return d[1];
+    },
+    value: function(d){
+        return d.length;
+    },
+    valueFloor: 0,
+    valueCeil: undefined
+};
+
+var hexLayer = L.hexbinLayer(options).addTo(map)
+hexLayer.colorScale().range(['#E2E7F3', '#064D92']);
+var activeLayer = 'residence'
+
+
+   
+var data=[];
+var selAll=[];
+var totCount = 0;
+var generateData2 = function(active){
+    if(active=='wood'){x=dataLong;y=dataLat;}
+	else if(active=='residence'){x=resdY;y=resdX;}
+	else if(active=='resource'){x=resoX;y=resoY;}
+	else if(active=='highway'){x=roadX;y=roadY;}
+	else if(active=='local'){x=locX;y=locY;}
+	else if(active=='winter'){x=winX;y=winY;}
+	data = [];
+	selAll=[];
+	totCount=0;
+	totCount=x.length;
+    for(i=0; i<x.length; i++){
+        data.push([x[i], y[i]]);
+    }
+    hexLayer.data(data);
+	makeChart(0,getAvg(d3.selectAll("path")))
+	selAll.push(d3.selectAll("path")[0])
+	;
+	d3.selectAll("path")
+	   .on("click", function(d) {
+		   val = (d.length/totCount)*100;
+		   document.getElementById("msg-box").innerHTML = 	val.toFixed(2)+"%";
+		   makeChart(val,getAvg(d3.selectAll("path")))
+	   });
+};
+generateData2(activeLayer)
+makeChart(0,getAvg(d3.selectAll("path")))
+map.on('viewreset',       function (e) { 
+	generateData2(activeLayer)
+	makeChart(0,getAvg(d3.selectAll("path")))
+
+});
+var a;
+var tot;
+function getAvg(array){
+	array=array[0]
+	a = 0;
+	tot = 0.00;
+	var avg = 0;
+	for(i=0; i<array.length; i++){
+		try{
+		a=a+1
+		val = parseFloat(array[i].__data__.length);}
+		catch(e){a=a-1}
+	}
+	avg=(100/a);
+	return avg;
+}
+var mapLabels = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/{type}/{z}/{x}/{y}.{ext}', {
+	type: 'hyb',
+	ext: 'png',
+	attribution: '',
+	subdomains: '1234',
+	opacity: 0.9
+});
+var bool1 = true;
+function toggleLab(){
+	if(bool1==false){map.removeLayer(mapLabels);bool1=true;} else if(bool1==true){mapLabels.addTo(map);bool1=false;
+	}}
+
+</script>
+	<script type="text/javascript">
+		$(document).ready(function() {	
+			$("#overlay").fadeOut(); 
+        })</script>
+
+</html>
